@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>Student Registration Portal | Practical 05</title>
+  <meta name="description" content="Student Registration Portal with server-side validation built with Node.js and ExpressJS for college Practical 05." />
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ══ Background blobs ══════════════════════════════════ -->
+  <div class="bg-blob blob-1" aria-hidden="true"></div>
+  <div class="bg-blob blob-2" aria-hidden="true"></div>
+
+  <main class="page-wrapper">
+
+    <!-- ── Header ─────────────────────────────────────────── -->
+    <header class="portal-header">
+      <div class="logo-ring" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+          <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="portal-title">Student Registration Portal</h1>
+        <p class="portal-subtitle">ExpressJS Practical 05 &mdash; Server-Side Validation</p>
+      </div>
+    </header>
+
+    <!-- ── Success Banner ─────────────────────────────────── -->
+    <% if (success) { %>
+    <div class="alert alert-success" role="alert" id="successBanner">
+      <div class="alert-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </div>
+      <div class="alert-body">
+        <strong>Registration Successful! 🎉</strong>
+        <p>Welcome, <strong><%= studentName %></strong>! Your registration has been submitted successfully. (No data was stored — this is a demonstration.)</p>
+      </div>
+      <a href="/" class="btn btn-outline-sm" id="registerAgainBtn">Register Another</a>
+    </div>
+    <% } %>
+
+    <!-- ── Global Error Banner ────────────────────────────── -->
+    <% if (!success && Object.keys(errors).length > 0) { %>
+    <div class="alert alert-error" role="alert" id="errorBanner">
+      <div class="alert-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+      </div>
+      <div class="alert-body">
+        <strong>Please fix the errors below.</strong>
+        <p>Your form has <strong><%= Object.keys(errors).length %></strong> validation error<%= Object.keys(errors).length > 1 ? 's' : '' %>. Correct the highlighted fields and try again.</p>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- ── Registration Form ──────────────────────────────── -->
+    <% if (!success) { %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Create Your Account</h2>
+        <p class="card-desc">Fill in the form below. All fields are required.</p>
+      </div>
+
+      <!--
+        action="/register"  → sends data to POST /register route
+        method="post"       → HTTP POST request
+        novalidate          → disables browser built-in validation so
+                              only SERVER-SIDE validation runs
+      -->
+      <form
+        id="registrationForm"
+        action="/register"
+        method="post"
+        novalidate
+        autocomplete="off"
+      >
+
+        <!-- Row 1 : Full Name + Email -->
+        <div class="form-row">
+          <!-- Full Name -->
+          <div class="form-group <%- errors.name ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="name" class="form-label">
+              Full Name <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+              </span>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                class="form-input"
+                placeholder="e.g. Bhumi Sharma"
+                value="<%= values.name || '' %>"
+                maxlength="80"
+                aria-describedby="nameError"
+                aria-invalid="<%= errors.name ? 'true' : 'false' %>"
+              />
+            </div>
+            <% if (errors.name) { %>
+              <span class="field-error" id="nameError" role="alert"><%= errors.name %></span>
+            <% } %>
+          </div>
+
+          <!-- Email Address -->
+          <div class="form-group <%- errors.email ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="email" class="form-label">
+              Email Address <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+              </span>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-input"
+                placeholder="e.g. bhumi@example.com"
+                value="<%= values.email || '' %>"
+                maxlength="100"
+                aria-describedby="emailError"
+                aria-invalid="<%= errors.email ? 'true' : 'false' %>"
+              />
+            </div>
+            <% if (errors.email) { %>
+              <span class="field-error" id="emailError" role="alert"><%= errors.email %></span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Row 2 : Phone + Age -->
+        <div class="form-row">
+          <!-- Phone Number -->
+          <div class="form-group <%- errors.phone ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="phone" class="form-label">
+              Phone Number <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+              </span>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                class="form-input"
+                placeholder="10-digit number e.g. 9876543210"
+                value="<%= values.phone || '' %>"
+                maxlength="10"
+                aria-describedby="phoneError"
+                aria-invalid="<%= errors.phone ? 'true' : 'false' %>"
+              />
+            </div>
+            <% if (errors.phone) { %>
+              <span class="field-error" id="phoneError" role="alert"><%= errors.phone %></span>
+            <% } %>
+          </div>
+
+          <!-- Age -->
+          <div class="form-group <%- errors.age ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="age" class="form-label">
+              Age <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                </svg>
+              </span>
+              <input
+                type="number"
+                id="age"
+                name="age"
+                class="form-input"
+                placeholder="Between 17 and 60"
+                value="<%= values.age || '' %>"
+                min="17"
+                max="60"
+                aria-describedby="ageError"
+                aria-invalid="<%= errors.age ? 'true' : 'false' %>"
+              />
+            </div>
+            <% if (errors.age) { %>
+              <span class="field-error" id="ageError" role="alert"><%= errors.age %></span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Row 3 : Course Selection (full width) -->
+        <div class="form-row">
+          <div class="form-group full-width <%- errors.course ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="course" class="form-label">
+              Course Selection <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 11-6-11-6z"/>
+                </svg>
+              </span>
+              <select
+                id="course"
+                name="course"
+                class="form-input form-select"
+                aria-describedby="courseError"
+                aria-invalid="<%= errors.course ? 'true' : 'false' %>"
+              >
+                <option value="" disabled <%= (!values.course) ? 'selected' : '' %>>-- Select Your Course --</option>
+                <optgroup label="Undergraduate">
+                  <option value="bsc-cs"  <%= values.course === 'bsc-cs'  ? 'selected' : '' %>>B.Sc. Computer Science</option>
+                  <option value="bsc-it"  <%= values.course === 'bsc-it'  ? 'selected' : '' %>>B.Sc. Information Technology</option>
+                  <option value="bca"     <%= values.course === 'bca'     ? 'selected' : '' %>>Bachelor of Computer Applications (BCA)</option>
+                  <option value="bcom"    <%= values.course === 'bcom'    ? 'selected' : '' %>>Bachelor of Commerce (B.Com)</option>
+                  <option value="ba"      <%= values.course === 'ba'      ? 'selected' : '' %>>Bachelor of Arts (BA)</option>
+                </optgroup>
+                <optgroup label="Postgraduate">
+                  <option value="msc-cs"  <%= values.course === 'msc-cs'  ? 'selected' : '' %>>M.Sc. Computer Science</option>
+                  <option value="msc-it"  <%= values.course === 'msc-it'  ? 'selected' : '' %>>M.Sc. Information Technology</option>
+                  <option value="mca"     <%= values.course === 'mca'     ? 'selected' : '' %>>Master of Computer Applications (MCA)</option>
+                  <option value="mba"     <%= values.course === 'mba'     ? 'selected' : '' %>>Master of Business Administration (MBA)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="other"   <%= values.course === 'other'   ? 'selected' : '' %>>Other</option>
+                </optgroup>
+              </select>
+            </div>
+            <% if (errors.course) { %>
+              <span class="field-error" id="courseError" role="alert"><%= errors.course %></span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Row 4 : Password + Confirm Password -->
+        <div class="form-row">
+          <!-- Password -->
+          <div class="form-group <%- errors.password ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="password" class="form-label">
+              Password <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                </svg>
+              </span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input"
+                placeholder="Min. 8 characters"
+                maxlength="128"
+                aria-describedby="passwordError"
+                aria-invalid="<%= errors.password ? 'true' : 'false' %>"
+              />
+              <button type="button" class="toggle-pw" aria-label="Toggle password visibility" data-target="password" id="togglePassword">
+                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+              </button>
+            </div>
+            <% if (errors.password) { %>
+              <span class="field-error" id="passwordError" role="alert"><%= errors.password %></span>
+            <% } %>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group <%- errors.confirmPassword ? 'has-error' : (Object.keys(errors).length > 0 ? 'has-success' : '') %>">
+            <label for="confirmPassword" class="form-label">
+              Confirm Password <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </span>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                class="form-input"
+                placeholder="Re-enter your password"
+                maxlength="128"
+                aria-describedby="confirmPasswordError"
+                aria-invalid="<%= errors.confirmPassword ? 'true' : 'false' %>"
+              />
+              <button type="button" class="toggle-pw" aria-label="Toggle confirm password visibility" data-target="confirmPassword" id="toggleConfirmPassword">
+                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+              </button>
+            </div>
+            <% if (errors.confirmPassword) { %>
+              <span class="field-error" id="confirmPasswordError" role="alert"><%= errors.confirmPassword %></span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span class="btn-text">Register Now</span>
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+            </svg>
+          </button>
+        </div>
+
+      </form><!-- /form -->
+
+      <!-- Validation Rules Info Box -->
+      <div class="rules-box">
+        <h3 class="rules-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          Validation Rules (Server-Side)
+        </h3>
+        <ul class="rules-list">
+          <li><span class="rule-field">Name</span> — At least 3 characters; letters, spaces, hyphens &amp; apostrophes only.</li>
+          <li><span class="rule-field">Email</span> — Must follow <em>user@domain.com</em> format.</li>
+          <li><span class="rule-field">Phone</span> — Exactly 10 digits, numbers only.</li>
+          <li><span class="rule-field">Age</span> — Must be between <strong>17</strong> and <strong>60</strong>.</li>
+          <li><span class="rule-field">Course</span> — A valid selection is required.</li>
+          <li><span class="rule-field">Password</span> — Minimum 8 characters.</li>
+          <li><span class="rule-field">Confirm Password</span> — Must exactly match the password.</li>
+        </ul>
+      </div>
+
+    </div><!-- /card -->
+    <% } %>
+
+  </main><!-- /page-wrapper -->
+
+  <!-- Footer -->
+  <footer class="portal-footer">
+    <p>Practical 05 &mdash; ExpressJS Server-Side Validation &mdash; Node.js &amp; EJS</p>
+  </footer>
+
+  <!-- Client-side JS (only UI enhancements, NOT validation) -->
+  <script src="/script.js"></script>
+</body>
+</html>
